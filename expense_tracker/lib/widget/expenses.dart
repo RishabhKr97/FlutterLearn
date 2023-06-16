@@ -1,3 +1,4 @@
+import 'package:expense_tracker/widget/expenses_list/expenses_list.dart';
 import 'package:expense_tracker/models/expense.dart';
 import 'package:flutter/material.dart';
 
@@ -26,13 +27,31 @@ class _ExpensesState extends State<Expenses> {
     )
   ];
 
+  void _openModalBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => Text('Modal Bottom Sheet'),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Flutter Expense Tracker'),
+        actions: [
+          IconButton(
+            onPressed: _openModalBottomSheet,
+            icon: const Icon(Icons.add),
+          )
+        ],
+      ),
       body: Column(
         children: [
-          Text('The Chart...'),
-          Text('Expenses'),
+          const Text('The Chart...'),
+          Expanded(
+            child: ExpensesList(expenses: _registeredExpenses),
+          ),
         ],
       ),
     );
