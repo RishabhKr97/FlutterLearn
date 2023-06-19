@@ -80,92 +80,186 @@ class _NewExpenseState extends State<NewExpense> {
   @override
   Widget build(BuildContext context) {
     final keyboardSize = MediaQuery.of(context).viewInsets.bottom;
-    return SizedBox(
-      height: double.infinity,
-      width: double.infinity,
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(16, 48, 16, keyboardSize + 16),
-          child: Column(
-            children: [
-              TextField(
-                maxLength: 50,
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  label: Text('Title'),
-                ),
-              ),
-              Row(
+
+    return LayoutBuilder(
+      builder: (ctx, constraints) {
+        final width = constraints.maxWidth;
+
+        return SizedBox(
+          height: double.infinity,
+          width: double.infinity,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, keyboardSize + 16),
+              child: Column(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      keyboardType: TextInputType.number,
-                      controller: _amountController,
+                  if (width > 600)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            maxLength: 50,
+                            controller: _titleController,
+                            decoration: const InputDecoration(
+                              label: Text('Title'),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            controller: _amountController,
+                            decoration: const InputDecoration(
+                              label: Text('Amount'),
+                              prefixText: '\$ ',
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    TextField(
+                      maxLength: 50,
+                      controller: _titleController,
                       decoration: const InputDecoration(
-                        label: Text('Amount'),
-                        prefixText: '\$ ',
+                        label: Text('Title'),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                  if (width > 600)
+                    Row(
                       children: [
-                        Text(
-                          _selectedDate == null
-                              ? 'No Date Selected'
-                              : _formatter.format(_selectedDate!),
+                        DropdownButton(
+                          value: _selectedCategory,
+                          items: Category.values
+                              .map((category) => DropdownMenuItem(
+                                    value: category,
+                                    child: Text(
+                                      category.name.toUpperCase(),
+                                    ),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            setState(() {
+                              _selectedCategory = value;
+                            });
+                          },
                         ),
-                        IconButton(
-                          onPressed: _showDatePicker,
-                          icon: const Icon(Icons.calendar_month),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                _selectedDate == null
+                                    ? 'No Date Selected'
+                                    : _formatter.format(_selectedDate!),
+                              ),
+                              IconButton(
+                                onPressed: _showDatePicker,
+                                icon: const Icon(Icons.calendar_month),
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            controller: _amountController,
+                            decoration: const InputDecoration(
+                              label: Text('Amount'),
+                              prefixText: '\$ ',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                _selectedDate == null
+                                    ? 'No Date Selected'
+                                    : _formatter.format(_selectedDate!),
+                              ),
+                              IconButton(
+                                onPressed: _showDatePicker,
+                                icon: const Icon(Icons.calendar_month),
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 16),
+                  if (width > 600)
+                    Row(
+                      children: [
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                        ElevatedButton(
+                          onPressed: _submitExpenseData,
+                          child: const Text('Submit Expense'),
+                        )
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        DropdownButton(
+                          value: _selectedCategory,
+                          items: Category.values
+                              .map((category) => DropdownMenuItem(
+                                    value: category,
+                                    child: Text(
+                                      category.name.toUpperCase(),
+                                    ),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            setState(() {
+                              _selectedCategory = value;
+                            });
+                          },
+                        ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                        ElevatedButton(
+                          onPressed: _submitExpenseData,
+                          child: const Text('Submit Expense'),
                         )
                       ],
                     ),
-                  )
                 ],
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  DropdownButton(
-                    value: _selectedCategory,
-                    items: Category.values
-                        .map((category) => DropdownMenuItem(
-                              value: category,
-                              child: Text(
-                                category.name.toUpperCase(),
-                              ),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      if (value == null) {
-                        return;
-                      }
-                      setState(() {
-                        _selectedCategory = value;
-                      });
-                    },
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _submitExpenseData,
-                    child: const Text('Submit Expense'),
-                  )
-                ],
-              )
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

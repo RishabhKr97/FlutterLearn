@@ -32,6 +32,7 @@ class _ExpensesState extends State<Expenses> {
   void _openModalBottomSheet() {
     showModalBottomSheet(
       isScrollControlled: true,
+      useSafeArea: true,
       context: context,
       builder: (ctx) => Padding(
         padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
