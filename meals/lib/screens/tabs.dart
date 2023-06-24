@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meals/providers/favorites_provider.dart';
-import 'package:meals/providers/meals_provider.dart';
+import 'package:meals/providers/filters_provider.dart';
 import 'package:meals/screens/categories.dart';
 import 'package:meals/screens/filters.dart';
 import 'package:meals/screens/meals.dart';
@@ -23,7 +23,6 @@ class TabsScreen extends ConsumerStatefulWidget {
 
 class _TabsScreenState extends ConsumerState<TabsScreen> {
   int _selectedPageIndex = 0;
-  Map<Filters, bool> _selectedFilters = kInitialFilters;
 
   void _selectPage(int index) {
     setState(() {
@@ -31,41 +30,22 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
     });
   }
 
-  void _setScreen(String identifier) async {
+  void _setScreen(String identifier) {
     Navigator.of(context).pop();
     if (identifier == 'filters') {
-      final result = await Navigator.of(context).push<Map<Filters, bool>>(
+      Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (ctx) => FiltersScreen(
-            selectedFilters: _selectedFilters,
-          ),
+          builder: (ctx) => const FiltersScreen(),
         ),
       );
-
-      setState(() {
-        _selectedFilters = result ?? kInitialFilters;
-      });
+    } else {
+      _selectPage(0);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final meals = ref.watch(mealsProvider);
-    final availableMeals = meals.where((meal) {
-      if (_selectedFilters[Filters.glutenFree]! && !meal.isGlutenFree) {
-        return false;
-      }
-      if (_selectedFilters[Filters.lactosseFree]! && !meal.isLactoseFree) {
-        return false;
-      }
-      if (_selectedFilters[Filters.vegetarian]! && !meal.isVegetarian) {
-        return false;
-      }
-      if (_selectedFilters[Filters.vegan]! && !meal.isVegan) {
-        return false;
-      }
-      return true;
-    }).toList();
+    final availableMeals = ref.watch(filteredMealProvider);
 
     Widget activePage = CategoriesScreen(
       availableMeals: availableMeals,
