@@ -2,16 +2,80 @@ import 'dart:io';
 
 import 'package:favorite_places/models/place.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart' as syspaths;
+import 'package:sqflite/sqflite.dart' as sql;
+import 'package:sqflite/sqlite_api.dart';
+
+Future<Database> _getDatabase() async {
+  print('Starting11');
+  final dbPath = await sql.getDatabasesPath();
+  final db = await sql.openDatabase(
+    path.join(dbPath, 'places.db'),
+    onCreate: (db, version) {
+      return db.execute(
+        'CREATE TABLE user_places(id TEXT PRIMARY KEY, title TEXT, image TEXT, lat REAL, long REAL, address TEXT)',
+      );
+    },
+    version: 1,
+  );
+  print('Starting11');
+
+  return db;
+}
 
 class UserPlacesNotifier extends StateNotifier<List<Place>> {
   UserPlacesNotifier() : super(const []);
 
-  void addPlace(String title, File image, PlaceLocation location) {
+  Future<void> loadPlaces() async {
+    print('Starting');
+    final db = await _getDatabase();
+    print('Finished');
+
+    final data = await db.query('user_places');
+    final places = data
+        .map(
+          (row) => Place(
+            id: row['id'] as String,
+            title: row['title'] as String,
+            image: File(row['image'] as String),
+            location: PlaceLocation(
+              latitude: row['lat'] as double,
+              longitude: row['long'] as double,
+              address: row['address'] as String,
+            ),
+          ),
+        )
+        .toList();
+
+    state = places;
+  }
+
+  void addPlace(String title, File image, PlaceLocation location) async {
+    final appDir = await syspaths.getApplicationDocumentsDirectory();
+    final fileName = path.basename(image.path);
+    final copiedImage = await image.copy('${appDir.path}/$fileName');
+
     final newPlace = Place(
       title: title,
-      image: image,
+      image: copiedImage,
       location: location,
     );
+
+    final db = await _getDatabase();
+
+    db.insert(
+      'user_places',
+      {
+        'id': newPlace.id,
+        'title': newPlace.title,
+        'image': newPlace.image.path,
+        'lat': newPlace.location.latitude,
+        'long': newPlace.location.longitude,
+        'address': newPlace.location.address,
+      },
+    );
+
     state = [newPlace, ...state];
   }
 }
